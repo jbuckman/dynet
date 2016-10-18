@@ -232,6 +232,7 @@ cdef extern from "dynet/expr.h" namespace "dynet::expr":
     CExpression c_sum      "dynet::expr::sum" (vector[CExpression]& xs)
     CExpression c_max      "dynet::expr::vmax" (vector[CExpression]& xs)
 
+    CExpression c_logsumexp      "dynet::expr::logsumexp" (vector[CExpression]& xs)
 
 #cdef extern from "dynet/model.h" namespace "dynet":
 #    cdef cppclass Model:
@@ -246,6 +247,7 @@ cdef extern from "dynet/rnn.h" namespace "dynet":
         void start_new_sequence(vector[CExpression] ces)
         CExpression add_input(CExpression &x)
         CExpression add_input(CRNNPointer prev, CExpression &x)
+        CExpression set_h(CRNNPointer prev, vector[CExpression] ces)
         void rewind_one_step()
         CExpression back()
         vector[CExpression] final_h()

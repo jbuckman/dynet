@@ -870,6 +870,16 @@ cpdef Expression concatenate(list xs):
         cvec.push_back(x.c())
     return Expression.from_cexpr(x.cg_version, c_concat(cvec))
 
+cpdef Expression logsumexp(list xs):
+    assert xs, 'List is empty, nothing to esum.'
+    cdef vector[CExpression] cvec
+    cvec = vector[CExpression]()
+    cdef Expression x
+    for x in xs:
+        ensure_freshness(x)
+        cvec.push_back(x.c())
+    #print >> sys.stderr, cvec.size()
+    return Expression.from_cexpr(x.cg_version, c_logsumexp(cvec))
 
 cpdef Expression affine_transform(list exprs):
     assert exprs, 'List input to affine_transform must not be empty.'
@@ -920,6 +930,16 @@ cdef class _RNNBuilder: # {{{
         ensure_freshness(e)
         if self.cg_version != _cg.version(): raise ValueError("Using stale builder. Create .new_graph() after computation graph is renewed.")
         return Expression.from_cexpr(self.cg_version, self.thisptr.add_input(prev, e.c()))
+
+    cdef set_h(self, CRNNPointer prev, es=None):
+        if self.cg_version != _cg.version(): raise ValueError("Using stale builder. Create .new_graph() after computation graph is renewed.")
+        cdef vector[CExpression] ces = vector[CExpression]()
+        cdef Expression e
+        if es:
+            for e in es:
+                ensure_freshness(e)
+                ces.push_back(e.c())
+        return Expression.from_cexpr(self.cg_version, self.thisptr.set_h(prev, ces))
 
     cdef rewind_one_step(self):
         if self.cg_version != _cg.version(): raise ValueError("Using stale builder. Create .new_graph() after computation graph is renewed.")
@@ -1142,6 +1162,11 @@ cdef class RNNState: # {{{
         self.state_idx=state_idx
         self._prev = prev_state
         self._out = out
+
+    cpdef RNNState set_h(self, es=None):
+        cdef Expression res = self.builder.set_h(CRNNPointer(self.state_idx), es)
+        cdef int state_idx = <int>self.builder.thisptr.state()
+        return RNNState(self.builder, state_idx, self, res)
 
     cpdef RNNState add_input(self, Expression x):
         cdef Expression res = self.builder.add_input_to_prev(CRNNPointer(self.state_idx), x)
