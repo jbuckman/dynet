@@ -323,6 +323,7 @@ def block_dropout(x, p): return GVExpr('block_dropout', [x,p], copy_dim(x))
 #expr-dim
 def reshape(x, d): return GVExpr('reshape', [x,d], make_dim(d))
 def esum(xs): return GVExpr('esum', xs, ensure_all_same_dim(xs))
+def logsumexp(xs): return GVExpr('logsumexp', xs, ensure_all_same_dim(xs))
 def average(xs): return GVExpr('average', xs, ensure_all_same_dim(xs))
 def emax(xs): return GVExpr('emax', xs, ensure_all_same_dim(xs))
 def concatenate_cols(xs):

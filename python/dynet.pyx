@@ -870,6 +870,16 @@ cpdef Expression concatenate(list xs):
         cvec.push_back(x.c())
     return Expression.from_cexpr(x.cg_version, c_concat(cvec))
 
+cpdef Expression logsumexp(list xs):
+    assert xs, 'List is empty, nothing to esum.'
+    cdef vector[CExpression] cvec
+    cvec = vector[CExpression]()
+    cdef Expression x
+    for x in xs:
+        ensure_freshness(x)
+        cvec.push_back(x.c())
+    #print >> sys.stderr, cvec.size()
+    return Expression.from_cexpr(x.cg_version, c_logsumexp(cvec))
 
 cpdef Expression affine_transform(list exprs):
     assert exprs, 'List input to affine_transform must not be empty.'
